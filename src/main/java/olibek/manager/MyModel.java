@@ -26,14 +26,18 @@ public class MyModel {
     @Column(name = "orderdate")
     private Date date;
 
+    @Column(name = "mycomment")
+    private String comment;
+
     public MyModel(){}
 
-    public MyModel(int id, int phone, int price, String address, Date date) {
+    public MyModel(int id, int phone, int price, String address, Date date, String comment) {
         this.id = id;
         this.phone = phone;
         this.price = price;
         this.address = address;
         this.date = date;
+        this.comment = comment;
     }
 
     public int getId() {
@@ -76,6 +80,14 @@ public class MyModel {
         this.date = date;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     @Override
     public String toString() {
         return "MyModel{" +
@@ -84,6 +96,7 @@ public class MyModel {
                 ", price=" + price +
                 ", address='" + address + '\'' +
                 ", date=" + date +
+                ", comment='" + comment + '\'' +
                 '}';
     }
 }

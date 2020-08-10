@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service("MyService")
@@ -20,13 +23,19 @@ public class MyService {
     public MyService(@Qualifier("modelRepository") ModelRepository modelRepository){
         this.modelRepository = modelRepository;
     }
-    public void createUser(String phoneNum, String price, String address) {
+    public boolean createUser(String phoneNum, String price, String address, String comment) {
         MyModel myModel = new MyModel();
         myModel.setAddress(address);
-        myModel.setPhone(Integer.parseInt(phoneNum));
-        myModel.setPrice(Integer.parseInt(price));
+        myModel.setComment(comment);
+        try{
+            myModel.setPhone(Integer.parseInt(phoneNum));
+            myModel.setPrice(Integer.parseInt(price));
+        }catch (NumberFormatException e){
+            return false;
+        }
         myModel.setDate(new java.util.Date());
         modelRepository.save(myModel);
+        return true;
     }
 
     public UserStat getUser(String phoneNum) {
@@ -97,8 +106,8 @@ public class MyService {
         List<MyModel> list = jdbcTemplate.query(
                 sql,
                 (rs, rowNum) -> new MyModel(rs.getInt("id"), rs.getInt("phone"),
-                        rs.getInt("price"), rs.getString("address"), rs.getTimestamp("orderdate")));
-        //System.out.println(list);
+                        rs.getInt("price"), rs.getString("address"), rs.getTimestamp("orderdate"), rs.getString("mycomment")));
+        list.forEach(System.out::println);
         return list;
     }
 
@@ -189,12 +198,14 @@ public class MyService {
     private final String DIV = "---";
     public void exportTxt(){
         File file = new File("src/export.txt");
+        file.delete();
+        file = new File("src/export.txt");
         FileWriter fr = null;
         List<MyModel> list = modelRepository.findAll();
         try {
             fr = new FileWriter(file, true);
             for(MyModel curr : list){
-                fr.write(curr.getId()+DIV+curr.getPhone()+DIV+curr.getAddress()+DIV+curr.getPrice()+DIV+curr.getDate()+"\n");
+                fr.write(curr.getId()+DIV+curr.getPhone()+DIV+curr.getAddress()+DIV+curr.getPrice()+DIV+curr.getDate()+DIV+curr.getComment()+"\n");
             }
             fr.close();
         } catch (IOException e) {

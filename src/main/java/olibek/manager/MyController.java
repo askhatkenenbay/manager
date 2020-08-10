@@ -22,6 +22,7 @@ public class MyController {
     @RequestMapping(value = "/")
     public String showLoginPage(ModelMap model,HttpServletRequest request, HttpSession session) throws UnsupportedEncodingException {
         model.put("order", myService.today(offset(0), limit));
+        session.setAttribute("isOlibek",false);
         session.setAttribute("pageNum", 0);
         request.setCharacterEncoding("utf-8");
         return "home";
@@ -30,9 +31,13 @@ public class MyController {
     @RequestMapping(value = "/", method = RequestMethod.POST, params = {"phoneNum", "price", "address"})
     public String createUser(HttpSession session, HttpServletRequest request, ModelMap model) {
         int pageNum = (int) session.getAttribute("pageNum");
+        boolean res =myService.createUser(request.getParameter("phoneNum"), request.getParameter("price"), request.getParameter("address"),request.getParameter("comment"));
+        if(res){
+            model.put("message","СОЗДАН");
+        }else{
+            model.put("message","ОШИБКА");
+        }
         model.put("order", myService.today(offset(pageNum), limit));
-        myService.createUser(request.getParameter("phoneNum"), request.getParameter("price"), request.getParameter("address"));
-        session.setAttribute("message", "new user created");
         return "home";
     }
 
@@ -40,13 +45,23 @@ public class MyController {
     public String getUser(HttpSession session, HttpServletRequest request, ModelMap model) {
         int pageNum = (int) session.getAttribute("pageNum");
         model.put("order", myService.today(offset(pageNum), limit));
+        String phoneNum = request.getParameter("phoneNum");
+        if(phoneNum != null && !phoneNum.isBlank()){
+            try{
+                int phone = Integer.parseInt(request.getParameter("phoneNum"));
+                if(phone == 2589){
+                    session.setAttribute("isOlibek",true);
+                }
+            }catch (Exception ignored){
+
+            }
+        }
         UserStat user = myService.getUser(request.getParameter("phoneNum"));
         if(user != null){
             model.put("info", user);
         }else{
-            model.put("umessage", "no info found");
+            model.put("message", "no info found");
         }
-        //session.setAttribute("message", "get");
         return "home";
     }
 
@@ -63,7 +78,12 @@ public class MyController {
     public String byDate(HttpSession session, HttpServletRequest request, ModelMap model) {
         int pageNum = (int) session.getAttribute("pageNum");
         model.put("order", myService.today(offset(pageNum), limit));
-        model.put("bydate",myService.getByDate(request.getParameter("bydate")));
+        String date = request.getParameter("bydate");
+        if(date != null && !date.isBlank()){
+            model.put("bydate",myService.getByDate(date));
+        }else{
+            model.put("err","Ошибка");
+        }
         return "home";
     }
 
